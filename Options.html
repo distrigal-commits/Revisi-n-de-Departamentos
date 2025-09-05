@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner y Convertidor a PDF</title>
+    <style>
+        /* Estilos CSS para la presentación de la página */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .custom-file-input {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .custom-file-input:hover {
+            background-color: #0056b3;
+        }
+
+        .pdf-button {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .pdf-button:hover {
+            background-color: #1e7e34;
+            transform: translateY(-2px);
+        }
+
+        #image-preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Escáner y Convertidor a PDF</h1>
+        <div class="button-group">
+            <label for="fileInput" class="custom-file-input">Escanear imagen 📸</label>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            
+            <button class="pdf-button" onclick="convertirYEnviar()">Convertir a PDF y Enviar 📁✉️</button>
+        </div>
+        
+        <img id="image-preview" alt="Vista previa de la imagen">
+    </div>
+
+    <script>
+        // Variables de JavaScript
+        // ----------------------------------------------------
+        // fileInput: Captura el elemento <input type="file">. Se usa para acceder al archivo seleccionado por el usuario.
+        const fileInput = document.getElementById('fileInput');
+
+        // imagePreview: Captura el elemento <img>. Se usa para mostrar la imagen que el usuario ha seleccionado.
+        const imagePreview = document.getElementById('image-preview');
+
+        // pdfFileName: Variable de tipo String que define el nombre del archivo PDF que se generará. Es estática.
+        const pdfFileName = "documento_escaneado.pdf"; 
+
+        // Escuchar cuando el usuario selecciona una imagen
+        fileInput.addEventListener('change', function(event) {
+            // file: Referencia al primer (y único) archivo seleccionado en el input.
+            const file = event.target.files[0];
+            if (file) {
+                // reader: Objeto para leer el contenido del archivo.
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // e.target.result: Contiene la URL de datos de la imagen.
+                    // Se asigna a la propiedad src de imagePreview para mostrarla.
+                    imagePreview.src = e.target.result;
+                    // Muestra el elemento de vista previa de la imagen.
+                    imagePreview.style.display = 'block';
+                };
+                // Lee el contenido del archivo como una URL de datos.
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Nueva función que combina las dos acciones
+        function convertirYEnviar() {
+            // Verifica si se ha seleccionado una imagen antes de continuar
+            if (imagePreview.style.display === 'none') {
+                alert("Por favor, selecciona una imagen primero.");
+                return; // Detiene la función si no hay imagen
+            }
+
+            // Convierte la imagen en el canvas
+            // canvas: El objeto que contiene la imagen renderizada.
+            html2canvas(imagePreview).then(canvas => {
+                // imgData: La URL de datos de la imagen del canvas.
+                const imgData = canvas.toDataURL('image/png');
+                
+                // { jsPDF }: Desestructura el objeto jsPDF de la librería para crear un nuevo documento.
+                const { jsPDF } = window.jspdf;
+                // doc: La instancia del documento PDF.
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                // imgWidth: Ancho de la imagen en el PDF, ajustado al ancho de la página.
+                const imgWidth = 210;
+                // pageHeight: Altura estándar de una página A4 en mm.
+                const pageHeight = 297;
+                // imgHeight: Altura calculada para mantener la proporción de la imagen.
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                // heightLeft: Altura restante por renderizar en las páginas del PDF.
+                let heightLeft = imgHeight;
+                // position: Posición vertical de la imagen en la página actual.
+                let position = 0;
+
+                // Añade la primera página
+                doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                // Resta la altura de la página de la altura restante.
+                heightLeft -= pageHeight;
+
+                // Bucle para agregar páginas adicionales si la imagen es muy larga
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // 1. Guardar el archivo PDF localmente
+                // doc.save(): Función que guarda el documento PDF con el nombre definido en pdfFileName.
+                doc.save(pdfFileName);
+                
+                // 2. Abrir el cliente de correo
+                // subject: El asunto del correo, codificado para la URL.
+                const subject = encodeURIComponent("Documento Escaneado");
+                // body: El cuerpo del correo, codificado para la URL.
+                const body = encodeURIComponent("Adjunto encontrará el documento escaneado en formato PDF. Saludos.");
+                // mailtoLink: La URL final que abre el cliente de correo.
+              
+                 const mailtoLink = `mailto:?subject=${subject}&body=${body}`
+                // Abre el cliente de correo en la misma ventana.
+                window.open(mailtoLink, '_self');
+
+                // Mensaje de alerta para guiar al usuario
+                alert("El PDF se ha descargado. Por favor, adjúntalo a tu correo.");
+                
+            });
+        }
+    </script>
+</body>
+</html>

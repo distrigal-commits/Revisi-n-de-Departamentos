@@ -1,0 +1,123 @@
+<style>
+    /* Estilos generales para el cuerpo de la página */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f4f7; /* Un gris azulado muy claro para un fondo suave */
+        
+        /* Líneas para la imagen de fondo */
+        background-image: url("Logo CONADI.png"); /* Ruta a la imagen */
+        background-repeat: no-repeat; /* Evita que la imagen se repita */
+        background-size: 1000px; /* Tamaño fijo para que el logo se vea completo */
+        background-position: center; /* Centra la imagen */
+        
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    /* Contenedor principal del formulario */
+    .login-container {
+        /* Opacidad muy baja para hacerlo casi transparente */
+        background-color: rgba(255, 255, 255, 0.2); 
+        padding: 60px; 
+        border-radius: 18px; 
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+        text-align: center;
+        width: 400px;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .login-container:hover {
+        transform: translateY(-8px);
+    }
+
+    /* Estilo para el título del formulario */
+    .login-container h2 {
+        margin-bottom: 40px; 
+        color: #030303; /* Color de texto negro para mayor contraste */
+        font-size: 1.5em; 
+        font-weight: 600;
+    }
+
+    /* Estilo para los campos de entrada de texto y contraseña */
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+        width: 100%;
+        padding: 18px; 
+        margin-bottom: 25px; 
+        border: 2px solid #555555; /* Borde oscuro para que se vea */
+        border-radius: 10px; 
+        box-sizing: border-box;
+        font-size: 1.2em;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .login-container input[type="text"]:focus,
+    .login-container input[type="password"]:focus {
+        border-color: #3b5998; 
+        outline: none;
+        box-shadow: 0 0 8px rgba(59, 89, 152, 0.5);
+    }
+
+    /* Estilo para el botón de Entrar */
+    .login-container button {
+        width: 100%;
+        padding: 20px; 
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.5em; 
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .login-container button:hover {
+        background-color: #43a047; 
+        transform: scale(1.02);
+    }
+
+    /* Estilo para el mensaje de error */
+    .error-message {
+        color: #e74c3c; 
+        margin-top: 20px;
+        visibility: hidden;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+</style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Iniciar Sesión</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Usuario" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">Entrar</button>
+        </form>
+        <p id="errorMessage" class="error-message">Usuario o contraseña incorrectos.</p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Valida los datos (ejemplo: usuario "admin", contraseña "12345")
+            if (username === 'admin' && password === '12345') {
+                // Redirige a la página de opciones si los datos son correctos
+                window.location.href = 'options.html';
+            } else {
+                // Muestra un mensaje de error si son incorrectos
+                errorMessage.style.visibility = 'visible';
+            }
+        });
+    </script>
+</body>
+</html>
